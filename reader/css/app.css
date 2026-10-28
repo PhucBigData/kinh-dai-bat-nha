@@ -381,42 +381,44 @@ html, body {
 
 .search-box-icon {
   position: absolute;
-  left: 11px;
-  color: var(--text-muted);
+  left: 14px;
+  color: var(--accent);
   pointer-events: none;
 }
 
 .search-input {
   width: 100%;
-  padding: 9px 58px 9px 34px;
-  border-radius: var(--radius-md);
+  padding: 10px 68px 10px 38px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--border);
   background-color: var(--bg-surface-elevated);
   color: var(--text-primary);
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   font-family: var(--font-sans);
   outline: none;
   transition: all var(--transition-fast);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .search-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-light);
+  box-shadow: 0 0 0 3px var(--accent-light);
 }
 
 .search-go-btn {
   position: absolute;
   right: 28px;
-  background-color: var(--accent);
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-hover));
   color: #FFF;
   border: none;
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
   font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
   display: none;
+  box-shadow: 0 2px 6px var(--accent-glow);
   transition: all var(--transition-fast);
 }
 
@@ -425,12 +427,12 @@ html, body {
 }
 
 .search-go-btn:hover {
-  background-color: var(--accent-hover);
+  transform: scale(1.05);
 }
 
 .search-clear {
   position: absolute;
-  right: 8px;
+  right: 10px;
   background: none;
   border: none;
   color: var(--text-muted);
@@ -444,42 +446,47 @@ html, body {
   display: block;
 }
 
-/* Catalog View Mode Tabs (11 Tập vs. 16 Hội) */
+/* Catalog View Mode Tabs (Luxury Zen Segmented Control) */
 .catalog-tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  background-color: var(--bg-surface);
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.04);
   padding: 3px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-light);
+  gap: 2px;
 }
 
 .catalog-tab-btn {
+  flex: 1;
   background: transparent;
   border: none;
-  padding: 6px 8px;
-  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  border-radius: var(--radius-full);
   font-family: var(--font-sans);
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
   transition: all var(--transition-fast);
+  text-align: center;
+}
+
+.catalog-tab-btn:hover {
+  color: var(--text-primary);
 }
 
 .catalog-tab-btn.active {
-  background-color: var(--bg-primary);
+  background-color: var(--bg-surface-elevated);
   color: var(--accent);
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 6px rgba(44, 34, 24, 0.08);
   font-weight: 700;
 }
 
-/* Filter Chips Bar */
+/* Filter Chips Bar (Zen Tag Slider) */
 .filter-chips-bar {
   display: flex;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 10px 16px;
   overflow-x: auto;
   border-bottom: 1px solid var(--border);
   background-color: var(--bg-surface);
@@ -491,118 +498,95 @@ html, body {
 }
 
 .filter-chip {
-  padding: 4px 10px;
-  font-size: 0.74rem;
+  padding: 5px 13px;
+  font-size: 0.75rem;
   font-family: var(--font-sans);
   border-radius: var(--radius-full);
-  background-color: var(--bg-primary);
+  background-color: var(--bg-surface-elevated);
   color: var(--text-secondary);
   border: 1px solid var(--border);
   cursor: pointer;
   white-space: nowrap;
-  font-weight: 600;
+  font-weight: 500;
   transition: all var(--transition-fast);
 }
 
 .filter-chip:hover {
   background-color: var(--bg-active);
   color: var(--text-primary);
+  border-color: var(--border-active);
 }
 
 .filter-chip.active {
-  background-color: var(--accent);
-  color: #FFF;
+  background: var(--accent-light);
+  color: var(--accent);
   border-color: var(--accent);
+  font-weight: 700;
+  box-shadow: 0 1px 4px var(--accent-light);
 }
 
-/* Quyển Catalog List */
+/* Quyển Catalog List (Illuminated Manuscript Index) */
 .quyen-list {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
+  padding: 10px 12px;
   list-style: none;
   scrollbar-width: thin;
 }
 
 .quyen-item {
-  padding: 10px 12px;
+  padding: 11px 14px;
   border-radius: var(--radius-md);
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   cursor: pointer;
   transition: all var(--transition-fast);
   display: flex;
   flex-direction: column;
   gap: 4px;
-  border: 1px solid transparent;
+  border: 1px solid var(--border);
   background-color: var(--bg-surface);
   position: relative;
-  overflow: hidden;
-}
-
-.quyen-item::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background-color: transparent;
-  transition: background-color var(--transition-fast);
 }
 
 .quyen-item:hover {
   background-color: var(--bg-surface-hover);
-  border-color: var(--border);
-  transform: translateX(2px);
-}
-
-.quyen-item.active {
-  background-color: var(--bg-active);
-  border-color: var(--border-light);
+  border-color: var(--border-active);
+  transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
-.quyen-item.active::before {
-  background-color: var(--accent);
+.quyen-item.active {
+  background: var(--bg-active);
+  border-color: var(--accent);
+  border-left: 4px solid var(--accent);
+  box-shadow: var(--shadow-sm);
 }
 
-.quyen-item-top {
+.quyen-item-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
 }
 
-.quyen-num-tag {
+.quyen-number {
   font-family: var(--font-title);
   font-weight: 700;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   color: var(--accent);
 }
 
-.quyen-tap-tag {
+.quyen-pages {
   font-family: var(--font-sans);
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.72rem;
   color: var(--text-muted);
-  background-color: var(--bg-primary);
-  padding: 2px 6px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-}
-
-.quyen-page-badge {
-  font-family: var(--font-sans);
-  font-size: 0.7rem;
   font-weight: 500;
-  color: var(--text-muted);
 }
 
-.quyen-pham-name {
+.quyen-title {
   font-size: 0.82rem;
   font-family: var(--font-content);
   color: var(--text-secondary);
-  line-height: 1.4;
+  line-height: 1.35;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

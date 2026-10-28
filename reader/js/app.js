@@ -2,7 +2,7 @@
  * Prajñā Reader Master Controller (v3 - Optimized Reading Edition)
  */
 
-import { parseMarkdown } from './parser.js?v=4';
+import { parseMarkdown } from './parser.js?v=5';
 import { 
   loadPreferences, 
   savePreferences, 
@@ -589,12 +589,11 @@ class PrajnaApp {
       const isActive = q.quyen === this.currentQuyenNum;
       return `
         <li class="quyen-item ${isActive ? 'active' : ''}" data-quyen="${q.quyen}">
-          <div class="quyen-item-top">
-            <span class="quyen-num-tag">Quyển ${String(q.quyen).padStart(2, '0')}</span>
-            <span class="quyen-tap-tag">Tập ${String(q.tap).padStart(2, '0')}</span>
-            <span class="quyen-page-badge">Trang ${q.p_in}</span>
+          <div class="quyen-item-header">
+            <span class="quyen-number">Quyển ${String(q.quyen).padStart(2, '0')}</span>
+            <span class="quyen-pages">tr. ${q.p_in}</span>
           </div>
-          <div class="quyen-pham-name" title="${q.pham || q.hoi}">
+          <div class="quyen-title" title="${q.pham || q.hoi}">
             ${q.pham || q.hoi}
           </div>
         </li>

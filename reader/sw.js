@@ -1,9 +1,9 @@
 /**
- * Prajñā Reader Service Worker (v2)
- * High performance offline caching with network-first updates for app shell
+ * Prajñā Reader Service Worker (v5)
+ * Network-first for all code/HTML assets to ensure instant UI updates
  */
 
-const CACHE_NAME = 'prajna-cache-v4';
+const CACHE_NAME = 'prajna-cache-v5';
 
 const STATIC_ASSETS = [
   './',
@@ -24,9 +24,7 @@ const STATIC_ASSETS = [
 self.addEventListener('install', (e) => {
   self.skipWaiting();
   e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
 });
 
@@ -47,8 +45,15 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
-  // Network-first for html and css to ensure instant UI updates
-  if (url.pathname.endsWith('.html') || url.pathname.endsWith('.css') || url.pathname.endsWith('.js')) {
+  // Network-first for HTML, root slash, CSS, JS, JSON
+  const isCodeAsset = 
+    url.pathname.endsWith('/') ||
+    url.pathname.endsWith('.html') ||
+    url.pathname.endsWith('.css') ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.json');
+
+  if (isCodeAsset) {
     e.respondWith(
       fetch(e.request)
         .then((networkResp) => {
@@ -58,29 +63,22 @@ self.addEventListener('fetch', (e) => {
           }
           return networkResp;
         })
-        .catch(() => caches.match(e.request))
+        .catch(() => caches.match(e.request).then(cached => cached || caches.match('./index.html')))
     );
     return;
   }
 
-  // Cache-first for markdown texts & large assets
+  // Cache-first for markdown scriptures & images
   e.respondWith(
     caches.match(e.request).then((cachedResp) => {
-      if (cachedResp) {
-        return cachedResp;
-      }
-      return fetch(e.request)
-        .then((networkResp) => {
-          if (!networkResp || networkResp.status !== 200) {
-            return networkResp;
-          }
-          const respToCache = networkResp.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(e.request, respToCache);
-          });
-          return networkResp;
-        })
-        .catch(() => caches.match('./index.html'));
+      if (cachedResp) return cachedResp;
+      return fetch(e.request).then((networkResp) => {
+        if (networkResp && networkResp.status === 200) {
+          const copy = networkResp.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
+        }
+        return networkResp;
+      });
     })
   );
 });
