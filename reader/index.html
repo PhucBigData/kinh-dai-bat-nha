@@ -31,8 +31,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/themes.css?v=7">
-  <link rel="stylesheet" href="css/app.css?v=7">
+  <link rel="stylesheet" href="css/themes.css?v=8">
+  <link rel="stylesheet" href="css/app.css?v=8">
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
@@ -146,7 +146,10 @@
             </div>
             <div style="flex: 1;">
               <h1 class="brand-name">ĐẠI BÁT NHÃ</h1>
-              <span class="brand-sub">600 Quyển · 11 Tập · 16 Hội</span>
+              <div class="brand-sub-row">
+                <span class="brand-sub">600 Quyển · 11 Tập · 16 Hội</span>
+                <span id="tracker-summary-pill" class="tracker-summary-pill" title="Tiến trình đã tụng xong">✓ 0/600</span>
+              </div>
             </div>
             <button id="btn-sidebar-close" class="btn-icon mobile-only-btn" title="Đóng mục lục">✕</button>
           </div>
@@ -256,6 +259,7 @@
         <button class="speed-btn" data-speed="3">3x (Nhanh)</button>
       </div>
       <button id="btn-autoscroll-pause" class="autoscroll-action-btn">⏸ Tạm dừng</button>
+      <button id="btn-autoscroll-metronome" class="autoscroll-action-btn" title="Bật/Tắt gõ mõ theo nhịp khi tự cuộn">🪘 Mõ: Tắt</button>
       <button id="btn-autoscroll-close" class="autoscroll-close-btn" title="Tắt tự cuộn">✕</button>
     </div>
 
@@ -334,6 +338,49 @@
         </div>
       </div>
 
+      <!-- Practice Tracker (Sổ Tinh Tấn) -->
+      <div class="setting-group-card">
+        <label class="setting-card-title">Sổ Tinh Tấn (Tiến Trình Tu Học)</label>
+        <div class="tracker-card-body">
+          <div class="tracker-stats">
+            <span id="tracker-count" class="tracker-count-large">0 / 600 Quyển</span>
+            <span id="tracker-pct" class="tracker-pct-badge">0%</span>
+          </div>
+          <div class="tracker-progress-track">
+            <div id="tracker-progress-fill" class="tracker-progress-fill" style="width: 0%;"></div>
+          </div>
+          <p class="tracker-sub-desc">Khi tụng xong một quyển, hãy nhấn nút <strong>"Đánh dấu ĐÃ TỤNG XONG"</strong> ở chân trang để lưu vào sổ tu học.</p>
+        </div>
+      </div>
+
+      <!-- Ritual Liturgy Toggle -->
+      <div class="setting-group-card">
+        <div class="setting-switch-row">
+          <div style="flex: 1; padding-right: 12px;">
+            <label class="setting-card-title" for="toggle-ritual" style="cursor: pointer;">Nghi Thức Khai Kinh & Bát Nhã</label>
+            <p class="setting-card-desc">Hiện bài Nguyện Hương, Khai Kinh ở đầu và Bát Nhã Tâm Kinh, Hồi Hướng ở cuối quyển:</p>
+          </div>
+          <label class="switch-control">
+            <input type="checkbox" id="toggle-ritual" checked>
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Metronome Setting -->
+      <div class="setting-group-card">
+        <div class="setting-switch-row">
+          <div style="flex: 1; padding-right: 12px;">
+            <label class="setting-card-title" for="toggle-metronome" style="cursor: pointer;">Gõ Mõ Theo Nhịp Khi Tự Cuộn</label>
+            <p class="setting-card-desc">Gõ mõ đều đặn nhịp 45 bpm giúp hòa giọng tụng kinh rảnh tay:</p>
+          </div>
+          <label class="switch-control">
+            <input type="checkbox" id="toggle-metronome">
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+      </div>
+
       <!-- Bookmarks Section -->
       <div class="setting-group-card">
         <label class="setting-card-title">Dấu Trang Của Bạn</label>
@@ -363,6 +410,6 @@
   </aside>
 
   <!-- Main App Script -->
-  <script type="module" src="js/app.js?v=7"></script>
+  <script type="module" src="js/app.js?v=8"></script>
 </body>
 </html>

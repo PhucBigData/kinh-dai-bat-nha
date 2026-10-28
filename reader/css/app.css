@@ -1430,6 +1430,366 @@ html, body {
   font-size: 1.35rem;
 }
 
+/* Switch Control (iOS style) */
+.setting-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.switch-control {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.switch-control input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: var(--border);
+  transition: .25s;
+  border-radius: 28px;
+}
+
+.switch-slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #fff;
+  transition: .25s;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.switch-control input:checked + .switch-slider {
+  background-color: var(--accent);
+}
+
+.switch-control input:checked + .switch-slider:before {
+  transform: translateX(20px);
+}
+
+/* Practice Tracker Card in Drawer */
+.tracker-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.tracker-stats {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.tracker-count-large {
+  font-family: var(--font-sans);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.tracker-pct-badge {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  background-color: var(--accent-light);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.tracker-progress-track {
+  width: 100%;
+  height: 8px;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.tracker-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #DDB06F);
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.tracker-sub-desc {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.brand-sub-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.tracker-summary-pill {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-light);
+  border: 1px solid var(--accent);
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.quyen-check-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--accent);
+  color: #FFF8E7;
+  font-size: 0.65rem;
+  font-weight: 700;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* Buddhist Ritual Cards */
+.ritual-block {
+  margin: 28px 0;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-active);
+  background: var(--bg-surface-elevated);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.ritual-opening {
+  border-top: 4px solid var(--accent);
+}
+
+.ritual-closing {
+  border-bottom: 4px solid var(--accent);
+}
+
+.ritual-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.ritual-tag-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+}
+
+.ritual-lotus {
+  font-size: 1.1rem;
+}
+
+.ritual-tag {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.ritual-collapse-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all var(--transition-fast);
+}
+
+.ritual-collapse-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.ritual-body {
+  padding: 22px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.ritual-body.collapsed {
+  display: none;
+}
+
+.ritual-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ritual-section-title {
+  font-family: var(--font-sans);
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+  border-bottom: 1px dashed var(--border);
+  padding-bottom: 4px;
+}
+
+.ritual-verse {
+  font-family: var(--font-content);
+  font-size: calc(var(--font-size, 21px) - 2px);
+  line-height: 1.95;
+  color: var(--text-primary);
+  text-align: center;
+  margin: 6px 0;
+}
+
+.ritual-verse.highlight-verse {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.ritual-bell-cue {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: -2px;
+}
+
+.ritual-prose {
+  font-family: var(--font-content);
+  font-size: calc(var(--font-size, 21px) - 2px);
+  line-height: 1.85;
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ritual-prose p {
+  margin: 0;
+}
+
+.ritual-prose .cue {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.ritual-namo {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: center;
+  margin-top: 6px;
+}
+
+.mantra-text {
+  background: var(--bg-surface);
+  border-left: 3px solid var(--accent);
+  padding: 8px 12px;
+  font-size: 1.05em;
+  color: var(--accent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* Completion Action Bar (Under Scripture) */
+.completion-action-bar {
+  margin: 36px 0 20px;
+  padding: 20px;
+  background: var(--bg-surface);
+  border: 1.5px dashed var(--border-active);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.completion-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.completion-icon {
+  color: var(--accent);
+  font-size: 1.2rem;
+}
+
+.btn-mark-completed {
+  min-height: 48px;
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--accent);
+  background-color: var(--bg-surface-elevated);
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-mark-completed:hover,
+.btn-mark-completed:active {
+  background-color: var(--accent-light);
+  transform: translateY(-1px);
+}
+
+.btn-mark-completed.completed {
+  background-color: var(--accent);
+  color: #FFF8E7;
+  border-color: var(--accent);
+  box-shadow: 0 4px 14px var(--accent-light);
+}
+
+.btn-mark-completed .check-icon {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
 /* Mobile Bottom Bar Navigation (Thumb-friendly & Accessible) */
 .mobile-bottom-bar {
   display: none;

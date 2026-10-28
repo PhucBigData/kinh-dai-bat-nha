@@ -90,3 +90,30 @@ export function playMokugyo() {
   osc.start(now);
   osc.stop(now + 0.16);
 }
+
+/**
+ * Rhythmic Mokugyo Metronome for Buddhist Chanting
+ */
+let metronomeTimer = null;
+
+export function startMokugyoMetronome(bpm = 45) {
+  stopMokugyoMetronome();
+  const safeBpm = Math.min(90, Math.max(30, bpm || 45));
+  const intervalMs = (60 / safeBpm) * 1000;
+  
+  playMokugyo();
+  metronomeTimer = setInterval(() => {
+    playMokugyo();
+  }, intervalMs);
+}
+
+export function stopMokugyoMetronome() {
+  if (metronomeTimer) {
+    clearInterval(metronomeTimer);
+    metronomeTimer = null;
+  }
+}
+
+export function isMetronomeRunning() {
+  return metronomeTimer !== null;
+}

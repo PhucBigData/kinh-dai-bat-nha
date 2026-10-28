@@ -12,6 +12,10 @@ const defaultPrefs = {
   lineHeight: 1.85,
   fontFamily: 'serif', // 'serif' | 'sans'
   zenMode: false,
+  showRitual: true, // Khung nghi thức khai kinh & hồi hướng
+  completedQuyens: [], // Danh sách các quyển đã hoàn thành [1, 2, ...]
+  metronomeEnabled: false, // Gõ mõ tự động theo nhịp
+  metronomeBpm: 45, // Nhịp tụng kinh bình hòa (45 nhịp/phút)
   bookmarks: [],
   scrollPositions: {} // { [quyen]: scrollPercent }
 };
@@ -78,4 +82,34 @@ export function saveScrollPosition(quyen, scrollPercent) {
 export function getScrollPosition(quyen) {
   const prefs = loadPreferences();
   return (prefs.scrollPositions && prefs.scrollPositions[quyen]) || 0;
+}
+
+export function toggleQuyenCompleted(quyen) {
+  const prefs = loadPreferences();
+  if (!Array.isArray(prefs.completedQuyens)) {
+    prefs.completedQuyens = [];
+  }
+  const qNum = parseInt(quyen, 10);
+  const idx = prefs.completedQuyens.indexOf(qNum);
+  let isCompleted = false;
+  if (idx >= 0) {
+    prefs.completedQuyens.splice(idx, 1);
+    isCompleted = false;
+  } else {
+    prefs.completedQuyens.push(qNum);
+    isCompleted = true;
+  }
+  savePreferences(prefs);
+  return isCompleted;
+}
+
+export function isQuyenCompleted(quyen) {
+  const prefs = loadPreferences();
+  const qNum = parseInt(quyen, 10);
+  return Array.isArray(prefs.completedQuyens) && prefs.completedQuyens.includes(qNum);
+}
+
+export function getCompletedQuyens() {
+  const prefs = loadPreferences();
+  return Array.isArray(prefs.completedQuyens) ? prefs.completedQuyens : [];
 }

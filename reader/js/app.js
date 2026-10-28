@@ -2,7 +2,7 @@
  * Prajñā Reader Master Controller (v3 - Optimized Reading Edition)
  */
 
-import { parseMarkdown } from './parser.js?v=5';
+import { parseMarkdown, renderOpeningRitual, renderClosingRitual } from './parser.js?v=7';
 import { 
   loadPreferences, 
   savePreferences, 
@@ -10,10 +10,19 @@ import {
   saveBookmark, 
   removeBookmark, 
   saveScrollPosition, 
-  getScrollPosition 
-} from './storage.js';
-import { filterQuyenList } from './search.js';
-import { playBell, playMokugyo } from './audio.js';
+  getScrollPosition,
+  toggleQuyenCompleted,
+  isQuyenCompleted,
+  getCompletedQuyens
+} from './storage.js?v=7';
+import { filterQuyenList } from './search.js?v=7';
+import { 
+  playBell, 
+  playMokugyo, 
+  startMokugyoMetronome, 
+  stopMokugyoMetronome, 
+  isMetronomeRunning 
+} from './audio.js?v=7';
 
 class PrajnaApp {
   constructor() {
@@ -111,7 +120,16 @@ class PrajnaApp {
       mBtnAutoscroll: document.getElementById('m-btn-autoscroll'),
       mBtnNext: document.getElementById('m-btn-next'),
       mBtnDisplay: document.getElementById('m-btn-display'),
-      btnSidebarClose: document.getElementById('btn-sidebar-close')
+      btnSidebarClose: document.getElementById('btn-sidebar-close'),
+
+      // Liturgy, Practice Tracker & Metronome
+      toggleRitual: document.getElementById('toggle-ritual'),
+      toggleMetronome: document.getElementById('toggle-metronome'),
+      btnAutoscrollMetronome: document.getElementById('btn-autoscroll-metronome'),
+      trackerCount: document.getElementById('tracker-count'),
+      trackerPct: document.getElementById('tracker-pct'),
+      trackerProgressFill: document.getElementById('tracker-progress-fill'),
+      trackerSummaryPill: document.getElementById('tracker-summary-pill')
     };
   }
 
@@ -190,6 +208,18 @@ class PrajnaApp {
       btn.classList.toggle('active', btn.dataset.theme === this.prefs.theme);
     });
 
+    if (this.el.toggleRitual) {
+      this.el.toggleRitual.checked = this.prefs.showRitual !== false;
+    }
+    if (this.el.toggleMetronome) {
+      this.el.toggleMetronome.checked = !!this.prefs.metronomeEnabled;
+    }
+    if (this.el.btnAutoscrollMetronome) {
+      this.el.btnAutoscrollMetronome.textContent = this.prefs.metronomeEnabled ? '🪘 Mõ: Bật' : '🪘 Mõ: Tắt';
+      this.el.btnAutoscrollMetronome.classList.toggle('active', !!this.prefs.metronomeEnabled);
+    }
+
+    this.updateTrackerUI();
     this.renderBookmarksList();
   }
 
@@ -421,6 +451,42 @@ class PrajnaApp {
       });
     }
 
+    // Liturgy and Metronome settings
+    if (this.el.toggleRitual) {
+      this.el.toggleRitual.addEventListener('change', (e) => {
+        this.prefs.showRitual = e.target.checked;
+        updatePreference('showRitual', this.prefs.showRitual);
+        this.loadQuyen(this.currentQuyenNum);
+        this.showToast(this.prefs.showRitual ? 'Đã bật khung nghi thức khai kinh & hồi hướng' : 'Đã ẩn khung nghi thức');
+      });
+    }
+
+    const setMetronomeState = (enabled) => {
+      this.prefs.metronomeEnabled = enabled;
+      updatePreference('metronomeEnabled', enabled);
+      if (this.el.toggleMetronome) this.el.toggleMetronome.checked = enabled;
+      if (this.el.btnAutoscrollMetronome) {
+        this.el.btnAutoscrollMetronome.textContent = enabled ? '🪘 Mõ: Bật' : '🪘 Mõ: Tắt';
+        this.el.btnAutoscrollMetronome.classList.toggle('active', enabled);
+      }
+      if (this.isAutoScrolling && !this.isAutoScrollPaused) {
+        if (enabled) {
+          startMokugyoMetronome(this.prefs.metronomeBpm || 45);
+        } else {
+          stopMokugyoMetronome();
+        }
+      }
+      this.showToast(enabled ? 'Đã bật gõ mõ theo nhịp (45 nhịp/phút)' : 'Đã tắt gõ mõ');
+    };
+
+    if (this.el.toggleMetronome) {
+      this.el.toggleMetronome.addEventListener('change', (e) => setMetronomeState(e.target.checked));
+    }
+
+    if (this.el.btnAutoscrollMetronome) {
+      this.el.btnAutoscrollMetronome.addEventListener('click', () => setMetronomeState(!this.prefs.metronomeEnabled));
+    }
+
     // Theme selector inside drawer
     this.el.themeBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -572,6 +638,10 @@ class PrajnaApp {
     this.el.btnAutoScrollPause.textContent = '⏸ Tạm dừng';
     this.el.autoScrollStatusText.textContent = 'Đang tự cuộn...';
 
+    if (this.prefs.metronomeEnabled) {
+      startMokugyoMetronome(this.prefs.metronomeBpm || 45);
+    }
+
     const scrollStep = () => {
       if (!this.isAutoScrolling) return;
 
@@ -607,6 +677,7 @@ class PrajnaApp {
   toggleAutoScrollPause() {
     this.isAutoScrollPaused = !this.isAutoScrollPaused;
     if (this.isAutoScrollPaused) {
+      stopMokugyoMetronome();
       this.el.btnAutoScrollPause.textContent = '▶ Tiếp tục';
       this.el.autoScrollStatusText.textContent = 'Đã tạm dừng';
       if (this.el.mBtnAutoscroll) {
@@ -617,6 +688,9 @@ class PrajnaApp {
       this.autoScrollAccumulator = this.el.contentArea.scrollTop;
       this.el.btnAutoScrollPause.textContent = '⏸ Tạm dừng';
       this.el.autoScrollStatusText.textContent = 'Đang tự cuộn...';
+      if (this.prefs.metronomeEnabled) {
+        startMokugyoMetronome(this.prefs.metronomeBpm || 45);
+      }
       if (this.el.mBtnAutoscroll) {
         const label = this.el.mBtnAutoscroll.querySelector('.m-autoscroll-label');
         if (label) label.textContent = 'Dừng';
@@ -628,6 +702,7 @@ class PrajnaApp {
     this.isAutoScrolling = false;
     this.isAutoScrollPaused = false;
     cancelAnimationFrame(this.autoScrollRAF);
+    stopMokugyoMetronome();
 
     // Restore CSS smooth-scrolling for normal jumps
     this.el.contentArea.style.scrollBehavior = '';
@@ -719,6 +794,16 @@ class PrajnaApp {
     this.renderSidebarList();
   }
 
+  updateTrackerUI() {
+    const completed = getCompletedQuyens();
+    const count = completed.length;
+    const pct = Math.round((count / 600) * 100);
+    if (this.el.trackerCount) this.el.trackerCount.textContent = `${count} / 600 Quyển`;
+    if (this.el.trackerPct) this.el.trackerPct.textContent = `${pct}%`;
+    if (this.el.trackerProgressFill) this.el.trackerProgressFill.style.width = `${pct}%`;
+    if (this.el.trackerSummaryPill) this.el.trackerSummaryPill.textContent = `✓ ${count}/600`;
+  }
+
   renderSidebarList() {
     if (this.filteredList.length === 0) {
       this.el.quyenListContainer.innerHTML = `
@@ -731,10 +816,11 @@ class PrajnaApp {
 
     const itemsHtml = this.filteredList.map(q => {
       const isActive = q.quyen === this.currentQuyenNum;
+      const isCompleted = isQuyenCompleted(q.quyen);
       return `
-        <li class="quyen-item ${isActive ? 'active' : ''}" data-quyen="${q.quyen}">
+        <li class="quyen-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}" data-quyen="${q.quyen}">
           <div class="quyen-item-header">
-            <span class="quyen-number">Quyển ${String(q.quyen).padStart(2, '0')}</span>
+            <span class="quyen-number">Quyển ${String(q.quyen).padStart(2, '0')}${isCompleted ? '<span class="quyen-check-badge" title="Đã hoàn thành quyển này">✓</span>' : ''}</span>
             <span class="quyen-pages">tr. ${q.p_in}</span>
           </div>
           <div class="quyen-title" title="${q.pham || q.hoi}">
@@ -813,6 +899,27 @@ class PrajnaApp {
       const mdText = await resp.text();
       const parsedHtml = parseMarkdown(mdText);
 
+      // Prepend Opening Ritual if enabled
+      const openingHtml = (this.prefs.showRitual !== false) ? renderOpeningRitual() : '';
+      
+      // Append Closing Ritual if enabled
+      const closingHtml = (this.prefs.showRitual !== false) ? renderClosingRitual() : '';
+
+      // Completion tracker action bar
+      const isCompleted = isQuyenCompleted(quyenNum);
+      const completionHtml = `
+        <div class="completion-action-bar">
+          <div class="completion-info">
+            <span class="completion-icon">☸</span>
+            <span class="completion-label">Công đức tu tập Quyển ${quyenNum}:</span>
+          </div>
+          <button id="btn-toggle-completion" class="btn-mark-completed ${isCompleted ? 'completed' : ''}">
+            <span class="check-icon">${isCompleted ? '✓' : '○'}</span>
+            <span class="btn-text">${isCompleted ? 'Đã hoàn thành quyển này' : 'Đánh dấu ĐÃ TỤNG XONG'}</span>
+          </button>
+        </div>
+      `;
+
       // Bottom chapter navigation with large friendly buttons
       const prevDisabled = quyenNum <= 1 ? 'disabled' : '';
       const nextDisabled = quyenNum >= 600 ? 'disabled' : '';
@@ -832,7 +939,7 @@ class PrajnaApp {
         </div>
       `;
 
-      this.el.contentInner.innerHTML = parsedHtml + navBottomHtml;
+      this.el.contentInner.innerHTML = openingHtml + parsedHtml + closingHtml + completionHtml + navBottomHtml;
 
       // Update dynamic document title for browser tabs & history
       const shortPham = (meta.pham || '').split('&')[0].replace(/^[IVXLCDM]+\.\s*/, '').trim();
@@ -842,6 +949,37 @@ class PrajnaApp {
 
       // Scroll to top
       this.el.contentArea.scrollTop = 0;
+
+      // Bind completion toggle
+      const btnComp = document.getElementById('btn-toggle-completion');
+      if (btnComp) {
+        btnComp.addEventListener('click', () => {
+          const nowCompleted = toggleQuyenCompleted(quyenNum);
+          btnComp.classList.toggle('completed', nowCompleted);
+          const icon = btnComp.querySelector('.check-icon');
+          if (icon) icon.textContent = nowCompleted ? '✓' : '○';
+          const txt = btnComp.querySelector('.btn-text');
+          if (txt) txt.textContent = nowCompleted ? 'Đã hoàn thành quyển này' : 'Đánh dấu ĐÃ TỤNG XONG';
+          this.updateTrackerUI();
+          this.renderSidebarList();
+          this.showToast(nowCompleted ? `Đã lưu: Viên mãn Quyển ${quyenNum} vào Sổ Tinh Tấn!` : `Đã bỏ đánh dấu Quyển ${quyenNum}`);
+        });
+      }
+
+      // Bind ritual collapse buttons
+      this.el.contentInner.querySelectorAll('.ritual-collapse-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.dataset.target;
+          const body = document.getElementById(targetId);
+          if (body) {
+            const isCollapsed = body.classList.toggle('collapsed');
+            const icon = btn.querySelector('.collapse-icon');
+            if (icon) icon.textContent = isCollapsed ? '▼' : '▲';
+            const txt = btn.querySelector('.collapse-text');
+            if (txt) txt.textContent = isCollapsed ? 'Mở rộng' : 'Thu gọn';
+          }
+        });
+      });
 
       // Bind bottom nav buttons
       const btnPrev = document.getElementById('btn-prev-quyen');
