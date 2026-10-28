@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="grad" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
+      <stop offset="0%" stop-color="#FBF7EE"/>
+      <stop offset="100%" stop-color="#E5D3B8"/>
+    </radialGradient>
+  </defs>
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#grad)" stroke="#9A4616" stroke-width="14"/>
+  <!-- Inner Ring -->
+  <circle cx="256" cy="256" r="180" fill="none" stroke="#9A4616" stroke-width="6" stroke-dasharray="8 6"/>
+  <!-- Central Lotus & Dharma Wheel (Dharmachakra) -->
+  <g fill="#9A4616" transform="translate(256, 256)">
+    <!-- 8 Spokes -->
+    <line x1="0" y1="-170" x2="0" y2="170" stroke="#9A4616" stroke-width="12" stroke-linecap="round"/>
+    <line x1="-170" y1="0" x2="170" y2="0" stroke="#9A4616" stroke-width="12" stroke-linecap="round"/>
+    <line x1="-120" y1="-120" x2="120" y2="120" stroke="#9A4616" stroke-width="12" stroke-linecap="round"/>
+    <line x1="120" y1="-120" x2="-120" y2="120" stroke="#9A4616" stroke-width="12" stroke-linecap="round"/>
+    <!-- Outer Rim Hubs -->
+    <circle cx="0" cy="-170" r="14" fill="#9A4616"/>
+    <circle cx="0" cy="170" r="14" fill="#9A4616"/>
+    <circle cx="-170" cy="0" r="14" fill="#9A4616"/>
+    <circle cx="170" cy="0" r="14" fill="#9A4616"/>
+    <circle cx="-120" cy="-120" r="14" fill="#9A4616"/>
+    <circle cx="120" cy="120" r="14" fill="#9A4616"/>
+    <circle cx="120" cy="-120" r="14" fill="#9A4616"/>
+    <circle cx="-120" cy="120" r="14" fill="#9A4616"/>
+    <!-- Center Hub -->
+    <circle cx="0" cy="0" r="54" fill="#9A4616" stroke="#FBF7EE" stroke-width="6"/>
+    <!-- Swastika / Yin-Yang in center -->
+    <text x="0" y="20" font-size="56" font-family="serif" font-weight="bold" fill="#FBF7EE" text-anchor="middle">卍</text>
+  </g>
+</svg>

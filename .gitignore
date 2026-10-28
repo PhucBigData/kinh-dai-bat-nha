@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local source PDFs (85MB binary scans - kept locally on your Mac)
+Kinh Bát Nhã/
+Kinh Bát Nhã/
+
+# Local credentials
+.env*
+*.key
+*.pem

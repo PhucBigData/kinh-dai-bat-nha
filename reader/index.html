@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="sepia" data-font="serif">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <title>Kinh Đại Bát Nhã Ba La Mật Đa — 600 Quyển</title>
+  <meta name="description" content="Ứng dụng đọc kinh Đại Bát Nhã Ba La Mật Đa trọn bộ 600 Quyển, 16 Hội, 11 Tập. Hán dịch: Huyền Trang, Việt dịch: Thích Trí Nghiêm.">
+  <meta name="theme-color" content="#FAF6ED">
+  
+  <!-- Apple Mobile Web App & PWA Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Đại Bát Nhã">
+  <link rel="apple-touch-icon" href="assets/icon-192.svg">
+  
+  <link rel="icon" type="image/svg+xml" href="assets/icon-192.svg">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Google Fonts: Lora (Thiền vị), Playfair Display (Trang nghiêm chuẩn Việt), Plus Jakarta Sans (Giao diện) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/themes.css?v=4">
+  <link rel="stylesheet" href="css/app.css?v=4">
+</head>
+<body>
+
+  <div id="app">
+    <!-- Top Header -->
+    <header class="reader-header">
+      <div class="header-left">
+        <button id="btn-sidebar-toggle" class="btn-icon" title="Ẩn/Hiện Mục Lục (Phím M)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <button id="btn-bell" class="btn-icon" title="Chuông Đại Bát Nhã (Phím B)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </button>
+        <button id="btn-mokugyo" class="btn-icon" title="Mõ Thiền (Phím M)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 11a8 8 0 0 0 16 0V9H4v2z"></path>
+            <path d="M7 19h10"></path>
+            <path d="M12 17v2"></path>
+            <path d="M9 5l3-3 3 3"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Center Title & Quick Next/Prev Navigation -->
+      <div class="header-center">
+        <button id="btn-prev-quyen-top" class="header-nav-btn" title="Về Quyển trước (Phím ←)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <div id="header-title-badge" class="current-title-badge" title="Nhấn để xem thông tin Quyển">
+          <span class="hoi-pill">TẬP 01 · HỘI 01</span>
+          <span class="quyen-pill-text">Quyển 01</span>
+          <span class="page-pill-text">(Trang 16–29)</span>
+        </div>
+        <button id="btn-next-quyen-top" class="header-nav-btn" title="Sang Quyển sau (Phím →)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Right Quick Reading Controls -->
+      <div class="header-right">
+        <!-- Quick Theme Switcher (1-click) -->
+        <div class="quick-theme-group" title="Chuyển nhanh màu nền đọc">
+          <button class="quick-theme-dot sepia active" data-theme="sepia" title="Nền Giấy Điệp"></button>
+          <button class="quick-theme-dot light" data-theme="light" title="Nền Bạch Liên"></button>
+          <button class="quick-theme-dot dark" data-theme="dark" title="Nền Tịch Diệt (Đêm)"></button>
+        </div>
+
+        <!-- Quick Font Size Steppers -->
+        <div class="quick-font-stepper" title="Chỉnh cỡ chữ đọc kinh">
+          <button id="btn-font-minus-top" class="quick-stepper-btn" title="Giảm cỡ chữ">A−</button>
+          <span id="font-size-val-top" class="quick-stepper-val">21px</span>
+          <button id="btn-font-plus-top" class="quick-stepper-btn" title="Tăng cỡ chữ">A+</button>
+        </div>
+
+        <!-- Quick Auto-scroll Button -->
+        <button id="btn-autoscroll" class="btn-action-pill" title="Tự động cuộn trang (Rảnh tay tụng kinh)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span class="pill-label">Tự cuộn</span>
+        </button>
+
+        <button id="btn-bookmark" class="btn-icon" title="Đánh dấu trang hiện tại">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </button>
+
+        <button id="btn-zen" class="btn-icon" title="Chế độ Thiền định Nhập tâm (Phím Z)">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 3c-1.5 3-4 6-4 9a4 4 0 0 0 8 0c0-3-2.5-6-4-9z"></path>
+            <path d="M5 13c1 3 4 5 7 5s6-2 7-5"></path>
+            <path d="M3 17c2 2 5 3 9 3s7-1 9-3"></path>
+          </svg>
+        </button>
+
+        <button id="btn-settings" class="btn-icon" title="Tùy chọn nâng cao">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <line x1="4" y1="21" x2="4" y2="14"></line>
+            <line x1="4" y1="10" x2="4" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12" y2="3"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line>
+            <line x1="20" y1="12" x2="20" y2="3"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Top Reading Progress Indicator -->
+      <div class="reading-progress-track">
+        <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="reader-body">
+      <!-- Sidebar -->
+      <aside id="sidebar" class="sidebar">
+        <div class="sidebar-header">
+          <div class="brand">
+            <div class="brand-icon-wrapper">
+              <svg class="brand-icon-svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="3"></circle>
+                <line x1="12" y1="2" x2="12" y2="9"></line>
+                <line x1="12" y1="15" x2="12" y2="22"></line>
+                <line x1="2" y1="12" x2="9" y2="12"></line>
+                <line x1="15" y1="12" x2="22" y2="12"></line>
+                <line x1="4.93" y1="4.93" x2="9.88" y2="9.88"></line>
+                <line x1="14.12" y1="14.12" x2="19.07" y2="19.07"></line>
+                <line x1="4.93" y1="19.07" x2="9.88" y2="14.12"></line>
+                <line x1="14.12" y1="9.88" x2="19.07" y2="4.93"></line>
+              </svg>
+            </div>
+            <div>
+              <h1 class="brand-name">ĐẠI BÁT NHÃ</h1>
+              <span class="brand-sub">Trọn bộ 600 Quyển · 11 Tập · 16 Hội</span>
+            </div>
+          </div>
+
+          <!-- Unified Smart Search & Jump Box -->
+          <div class="search-box">
+            <svg class="search-box-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="search-input" class="search-input" placeholder="Tìm tên Phẩm, hoặc gõ số Quyển (1–600)...">
+            <button id="search-go-btn" class="search-go-btn" title="Đi đến Quyển">Đi ➔</button>
+            <button id="search-clear" class="search-clear" title="Xóa">✕</button>
+          </div>
+
+          <!-- View Mode Tabs (11 Tập vs. 16 Hội) -->
+          <div class="catalog-tabs">
+            <button id="tab-tap" class="catalog-tab-btn active" data-mode="tap">Theo 11 Tập</button>
+            <button id="tab-hoi" class="catalog-tab-btn" data-mode="hoi">Theo 16 Hội</button>
+          </div>
+        </div>
+
+        <!-- Filter Chips Bar (Dynamically populated based on active tab) -->
+        <div id="filter-chips-bar" class="filter-chips-bar">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Scrollable Quyển List -->
+        <ul id="quyen-list" class="quyen-list">
+          <!-- Populated by JS -->
+        </ul>
+      </aside>
+      <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+      <!-- Content Reading Area -->
+      <main id="content-area" class="content-area">
+        <div id="content-inner" class="content-inner">
+          <div class="loading-indicator">
+            <div class="spinner-lotus-wrap">
+              <svg class="lotus-spinner-svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="3"></circle>
+                <line x1="12" y1="2" x2="12" y2="9"></line>
+                <line x1="12" y1="15" x2="12" y2="22"></line>
+                <line x1="2" y1="12" x2="9" y2="12"></line>
+                <line x1="15" y1="12" x2="22" y2="12"></line>
+              </svg>
+            </div>
+            <p class="loading-text">Đang cung thỉnh kinh văn...</p>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Floating Auto-Scroll Control Bar (When active) -->
+    <div id="autoscroll-bar" class="autoscroll-floating-bar hidden">
+      <div class="autoscroll-status">
+        <span class="pulse-dot"></span>
+        <span id="autoscroll-status-text">Đang tự cuộn...</span>
+      </div>
+      <div class="autoscroll-speed-group">
+        <button class="speed-btn active" data-speed="1">1x (Chậm)</button>
+        <button class="speed-btn" data-speed="2">2x (Vừa)</button>
+        <button class="speed-btn" data-speed="3">3x (Nhanh)</button>
+      </div>
+      <button id="btn-autoscroll-pause" class="autoscroll-action-btn">⏸ Tạm dừng</button>
+      <button id="btn-autoscroll-close" class="autoscroll-close-btn" title="Tắt tự cuộn">✕</button>
+    </div>
+
+    <!-- Zen Mode Exit Button -->
+    <button id="btn-zen-exit" class="zen-exit-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+      <span>Thoát Thiền Định (Z)</span>
+    </button>
+  </div>
+
+  <!-- Settings Drawer -->
+  <div id="drawer-backdrop" class="drawer-backdrop"></div>
+  <aside id="settings-drawer" class="settings-drawer" aria-label="Bảng cài đặt hiển thị">
+    <div class="drawer-header">
+      <div class="drawer-title-group">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <h2 class="drawer-title">Tùy Chọn Đọc Kinh</h2>
+      </div>
+      <button id="btn-drawer-close" class="btn-icon" title="Đóng">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- Theme Selection -->
+      <div class="setting-group">
+        <label class="setting-label">Chủ Đề Ánh Sáng</label>
+        <div class="theme-options">
+          <button class="theme-btn active" data-theme="sepia">
+            <span class="theme-swatch sepia-swatch"></span>
+            <span class="theme-btn-title">Giấy Điệp</span>
+          </button>
+          <button class="theme-btn" data-theme="light">
+            <span class="theme-swatch light-swatch"></span>
+            <span class="theme-btn-title">Bạch Liên</span>
+          </button>
+          <button class="theme-btn" data-theme="dark">
+            <span class="theme-swatch dark-swatch"></span>
+            <span class="theme-btn-title">Tịch Diệt</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Font Family -->
+      <div class="setting-group">
+        <label class="setting-label">Phông Chữ Kinh Văn</label>
+        <div class="theme-options font-family-grid">
+          <button class="theme-btn font-family-btn active" data-font="serif" style="font-family: 'Lora', serif;">
+            <span style="font-size: 1.15rem; font-weight: 600;">Như Lai</span>
+            <span class="font-sub-label">Cổ Điển (Serif)</span>
+          </button>
+          <button class="theme-btn font-family-btn" data-font="sans" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+            <span style="font-size: 1.15rem; font-weight: 600;">Như Lai</span>
+            <span class="font-sub-label">Hiện Đại (Sans)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bookmarks Section -->
+      <div class="setting-group">
+        <label class="setting-label">Dấu Trang Của Bạn</label>
+        <div id="bookmarks-list" class="bookmarks-list-box">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Scripture Tribute & Info Card -->
+      <div class="drawer-footer-card">
+        <div class="tribute-badge">ĐẠI TẠNG KINH VIỆT NAM</div>
+        <p><strong>Hán dịch:</strong> Tam Tạng Pháp Sư Huyền Trang</p>
+        <p><strong>Việt dịch:</strong> Trưởng lão HT. Thích Trí Nghiêm</p>
+        <p><strong>Giảo chính:</strong> Trưởng lão HT. Thích Quảng Độ</p>
+        <p class="tribute-publish">Ấn hành: Ban Bảo Trợ Phiên Dịch Pháp Tạng Phật Giáo Việt Nam Tại Hoa Kỳ (2003)</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main App Script -->
+  <script type="module" src="js/app.js?v=4"></script>
+</body>
+</html>
