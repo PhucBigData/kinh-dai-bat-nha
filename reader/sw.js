@@ -1,9 +1,9 @@
 /**
- * Prajñā Reader Service Worker (v5)
+ * Prajñā Reader Service Worker (v6)
  * Network-first for all code/HTML assets to ensure instant UI updates
  */
 
-const CACHE_NAME = 'prajna-cache-v5';
+const CACHE_NAME = 'prajna-cache-v6';
 
 const STATIC_ASSETS = [
   './',

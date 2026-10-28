@@ -93,15 +93,37 @@ class PrajnaApp {
       settingsDrawer: document.getElementById('settings-drawer'),
       drawerCloseBtn: document.getElementById('btn-drawer-close'),
       drawerBackdrop: document.getElementById('drawer-backdrop'),
-      themeBtns: document.querySelectorAll('.theme-btn'),
+      themeBtns: document.querySelectorAll('.theme-btn, .theme-btn-card'),
       fontFamilyBtns: document.querySelectorAll('.font-family-btn'),
-      bookmarksList: document.getElementById('bookmarks-list')
+      bookmarksList: document.getElementById('bookmarks-list'),
+
+      // Drawer Large Senior Controls
+      btnFontMinusLarge: document.getElementById('btn-font-minus'),
+      btnFontPlusLarge: document.getElementById('btn-font-plus'),
+      fontSizeValLarge: document.getElementById('font-size-val'),
+      sheetBtnBell: document.getElementById('sheet-btn-bell'),
+      sheetBtnMokugyo: document.getElementById('sheet-btn-mokugyo'),
+
+      // Mobile Bottom Bar Navigation
+      mBtnToc: document.getElementById('m-btn-toc'),
+      mBtnPrev: document.getElementById('m-btn-prev'),
+      mBtnAutoscroll: document.getElementById('m-btn-autoscroll'),
+      mBtnNext: document.getElementById('m-btn-next'),
+      mBtnDisplay: document.getElementById('m-btn-display'),
+      btnSidebarClose: document.getElementById('btn-sidebar-close')
     };
   }
 
   async init() {
     this.applyPreferences();
     this.bindEvents();
+
+    if (window.innerWidth <= 900) {
+      this.el.sidebar.classList.add('closed');
+      if (this.el.sidebarBackdrop) {
+        this.el.sidebarBackdrop.classList.remove('active');
+      }
+    }
 
     try {
       const resp = await fetch('data/toc.json');
@@ -148,6 +170,9 @@ class PrajnaApp {
 
     if (this.el.fontSizeValTop) {
       this.el.fontSizeValTop.textContent = `${currentSize}px`;
+    }
+    if (this.el.fontSizeValLarge) {
+      this.el.fontSizeValLarge.textContent = `${currentSize}px`;
     }
 
     if (this.prefs.zenMode) {
@@ -213,27 +238,27 @@ class PrajnaApp {
       });
     });
 
-    // 5. Quick Font Size Steppers (Header)
-    if (this.el.btnFontMinusTop) {
-      this.el.btnFontMinusTop.addEventListener('click', () => {
-        let size = (this.prefs.fontSize || 21) - 1;
-        if (size >= 16) {
-          this.prefs.fontSize = size;
-          updatePreference('fontSize', size);
-          this.applyPreferences();
-        }
-      });
-    }
+    // 5. Font Size Steppers (Header & Drawer Large Controls)
+    const updateFontSize = (delta) => {
+      let size = (this.prefs.fontSize || 21) + delta;
+      if (size >= 16 && size <= 36) {
+        this.prefs.fontSize = size;
+        updatePreference('fontSize', size);
+        this.applyPreferences();
+      }
+    };
 
+    if (this.el.btnFontMinusTop) {
+      this.el.btnFontMinusTop.addEventListener('click', () => updateFontSize(-1));
+    }
     if (this.el.btnFontPlusTop) {
-      this.el.btnFontPlusTop.addEventListener('click', () => {
-        let size = (this.prefs.fontSize || 21) + 1;
-        if (size <= 36) {
-          this.prefs.fontSize = size;
-          updatePreference('fontSize', size);
-          this.applyPreferences();
-        }
-      });
+      this.el.btnFontPlusTop.addEventListener('click', () => updateFontSize(1));
+    }
+    if (this.el.btnFontMinusLarge) {
+      this.el.btnFontMinusLarge.addEventListener('click', () => updateFontSize(-1));
+    }
+    if (this.el.btnFontPlusLarge) {
+      this.el.btnFontPlusLarge.addEventListener('click', () => updateFontSize(1));
     }
 
     // 6. Unified Smart Search & Jump
@@ -323,6 +348,55 @@ class PrajnaApp {
     this.el.btnSettings.addEventListener('click', () => this.openSettingsDrawer());
     this.el.drawerCloseBtn.addEventListener('click', () => this.closeSettingsDrawer());
     this.el.drawerBackdrop.addEventListener('click', () => this.closeSettingsDrawer());
+
+    // Audio Tools inside Drawer (Accessible on Mobile)
+    if (this.el.sheetBtnBell) {
+      this.el.sheetBtnBell.addEventListener('click', () => playBell());
+    }
+    if (this.el.sheetBtnMokugyo) {
+      this.el.sheetBtnMokugyo.addEventListener('click', () => playMokugyo());
+    }
+
+    // 11. Mobile Bottom Bar Navigation
+    if (this.el.mBtnToc) {
+      this.el.mBtnToc.addEventListener('click', () => {
+        const isClosed = this.el.sidebar.classList.toggle('closed');
+        if (this.el.sidebarBackdrop) {
+          this.el.sidebarBackdrop.classList.toggle('active', !isClosed);
+        }
+      });
+    }
+
+    if (this.el.btnSidebarClose) {
+      this.el.btnSidebarClose.addEventListener('click', () => {
+        this.el.sidebar.classList.add('closed');
+        if (this.el.sidebarBackdrop) this.el.sidebarBackdrop.classList.remove('active');
+      });
+    }
+
+    if (this.el.mBtnPrev) {
+      this.el.mBtnPrev.addEventListener('click', () => {
+        if (this.currentQuyenNum > 1) this.loadQuyen(this.currentQuyenNum - 1);
+      });
+    }
+
+    if (this.el.mBtnNext) {
+      this.el.mBtnNext.addEventListener('click', () => {
+        if (this.currentQuyenNum < 600) this.loadQuyen(this.currentQuyenNum + 1);
+      });
+    }
+
+    if (this.el.mBtnAutoscroll) {
+      this.el.mBtnAutoscroll.addEventListener('click', () => {
+        this.toggleAutoScroll();
+      });
+    }
+
+    if (this.el.mBtnDisplay) {
+      this.el.mBtnDisplay.addEventListener('click', () => {
+        this.openSettingsDrawer();
+      });
+    }
 
     // Theme selector inside drawer
     this.el.themeBtns.forEach(btn => {
@@ -454,6 +528,11 @@ class PrajnaApp {
     this.isAutoScrollPaused = false;
     this.el.btnAutoscroll.classList.add('active');
     this.el.btnAutoscroll.querySelector('.pill-label').textContent = 'Đang cuộn';
+    if (this.el.mBtnAutoscroll) {
+      this.el.mBtnAutoscroll.classList.add('active');
+      const label = this.el.mBtnAutoscroll.querySelector('.m-autoscroll-label');
+      if (label) label.textContent = 'Dừng';
+    }
     this.el.autoScrollBar.classList.remove('hidden');
     this.el.btnAutoScrollPause.textContent = '⏸ Tạm dừng';
     this.el.autoScrollStatusText.textContent = 'Đang tự cuộn...';
@@ -488,9 +567,17 @@ class PrajnaApp {
     if (this.isAutoScrollPaused) {
       this.el.btnAutoScrollPause.textContent = '▶ Tiếp tục';
       this.el.autoScrollStatusText.textContent = 'Đã tạm dừng';
+      if (this.el.mBtnAutoscroll) {
+        const label = this.el.mBtnAutoscroll.querySelector('.m-autoscroll-label');
+        if (label) label.textContent = 'Tiếp tục';
+      }
     } else {
       this.el.btnAutoScrollPause.textContent = '⏸ Tạm dừng';
       this.el.autoScrollStatusText.textContent = 'Đang tự cuộn...';
+      if (this.el.mBtnAutoscroll) {
+        const label = this.el.mBtnAutoscroll.querySelector('.m-autoscroll-label');
+        if (label) label.textContent = 'Dừng';
+      }
     }
   }
 
@@ -500,6 +587,11 @@ class PrajnaApp {
     cancelAnimationFrame(this.autoScrollRAF);
     this.el.btnAutoscroll.classList.remove('active');
     this.el.btnAutoscroll.querySelector('.pill-label').textContent = 'Tự cuộn';
+    if (this.el.mBtnAutoscroll) {
+      this.el.mBtnAutoscroll.classList.remove('active');
+      const label = this.el.mBtnAutoscroll.querySelector('.m-autoscroll-label');
+      if (label) label.textContent = 'Tự cuộn';
+    }
     this.el.autoScrollBar.classList.add('hidden');
   }
 
