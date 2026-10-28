@@ -549,13 +549,25 @@ class PrajnaApp {
   startAutoScroll() {
     this.isAutoScrolling = true;
     this.isAutoScrollPaused = false;
-    this.el.btnAutoscroll.classList.add('active');
-    this.el.btnAutoscroll.querySelector('.pill-label').textContent = 'Đang cuộn';
+    
+    // Use floating-point accumulator to prevent integer truncation on mobile WebKit
+    this.autoScrollAccumulator = this.el.contentArea.scrollTop;
+
+    // Temporarily bypass CSS smooth-scrolling so rAF doesn't fight smooth interpolation
+    this.el.contentArea.style.scrollBehavior = 'auto';
+
+    if (this.el.btnAutoscroll) {
+      this.el.btnAutoscroll.classList.add('active');
+      const pill = this.el.btnAutoscroll.querySelector('.pill-label');
+      if (pill) pill.textContent = 'Đang cuộn';
+    }
+
     if (this.el.mBtnAutoscroll) {
       this.el.mBtnAutoscroll.classList.add('active');
       const label = this.el.mBtnAutoscroll.querySelector('.m-autoscroll-label');
       if (label) label.textContent = 'Dừng';
     }
+
     this.el.autoScrollBar.classList.remove('hidden');
     this.el.btnAutoScrollPause.textContent = '⏸ Tạm dừng';
     this.el.autoScrollStatusText.textContent = 'Đang tự cuộn...';
@@ -564,14 +576,21 @@ class PrajnaApp {
       if (!this.isAutoScrolling) return;
 
       if (!this.isAutoScrollPaused) {
-        // Speed multipliers
-        const speedMap = { 1: 0.65, 2: 1.35, 3: 2.2 };
-        const step = speedMap[this.autoScrollSpeed] || 0.8;
-        this.el.contentArea.scrollTop += step;
+        // Speed step in pixels per animation frame (60fps)
+        const speedMap = { 1: 0.85, 2: 1.65, 3: 2.85 };
+        const step = speedMap[this.autoScrollSpeed] || 0.85;
+
+        this.autoScrollAccumulator += step;
+        this.el.contentArea.scrollTop = Math.floor(this.autoScrollAccumulator);
+
+        // If user manually touched & scrolled, re-sync accumulator smoothly
+        if (Math.abs(this.el.contentArea.scrollTop - this.autoScrollAccumulator) > 40) {
+          this.autoScrollAccumulator = this.el.contentArea.scrollTop;
+        }
 
         // Check if reached bottom
         const maxScroll = this.el.contentArea.scrollHeight - this.el.contentArea.clientHeight;
-        if (this.el.contentArea.scrollTop >= maxScroll - 2) {
+        if (maxScroll > 10 && this.el.contentArea.scrollTop >= maxScroll - 4) {
           this.stopAutoScroll();
           this.showToast('Đã viên mãn thời kinh quyển này.');
           return;
@@ -595,6 +614,7 @@ class PrajnaApp {
         if (label) label.textContent = 'Tiếp tục';
       }
     } else {
+      this.autoScrollAccumulator = this.el.contentArea.scrollTop;
       this.el.btnAutoScrollPause.textContent = '⏸ Tạm dừng';
       this.el.autoScrollStatusText.textContent = 'Đang tự cuộn...';
       if (this.el.mBtnAutoscroll) {
@@ -608,13 +628,22 @@ class PrajnaApp {
     this.isAutoScrolling = false;
     this.isAutoScrollPaused = false;
     cancelAnimationFrame(this.autoScrollRAF);
-    this.el.btnAutoscroll.classList.remove('active');
-    this.el.btnAutoscroll.querySelector('.pill-label').textContent = 'Tự cuộn';
+
+    // Restore CSS smooth-scrolling for normal jumps
+    this.el.contentArea.style.scrollBehavior = '';
+
+    if (this.el.btnAutoscroll) {
+      this.el.btnAutoscroll.classList.remove('active');
+      const pill = this.el.btnAutoscroll.querySelector('.pill-label');
+      if (pill) pill.textContent = 'Tự cuộn';
+    }
+
     if (this.el.mBtnAutoscroll) {
       this.el.mBtnAutoscroll.classList.remove('active');
       const label = this.el.mBtnAutoscroll.querySelector('.m-autoscroll-label');
       if (label) label.textContent = 'Tự cuộn';
     }
+
     this.el.autoScrollBar.classList.add('hidden');
   }
 

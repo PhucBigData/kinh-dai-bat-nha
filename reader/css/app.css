@@ -1469,6 +1469,10 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
+.m-nav-item * {
+  pointer-events: none;
+}
+
 .m-nav-item svg {
   stroke: currentColor;
   transition: transform var(--transition-fast);
@@ -1636,9 +1640,6 @@ body.zen-mode .zen-exit-btn {
   .content-inner {
     padding-bottom: calc(100px + env(safe-area-inset-bottom));
   }
-  .autoscroll-floating-bar {
-    bottom: calc(20px + env(safe-area-inset-bottom));
-  }
 }
 
 /* Tablets & Small Laptops (< 900px) */
@@ -1683,6 +1684,12 @@ body.zen-mode .zen-exit-btn {
 
   .content-inner {
     padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .autoscroll-floating-bar {
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+    width: calc(100% - 24px) !important;
+    max-width: 440px !important;
   }
 }
 
