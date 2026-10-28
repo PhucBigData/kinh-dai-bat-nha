@@ -103,6 +103,7 @@ class PrajnaApp {
       fontSizeValLarge: document.getElementById('font-size-val'),
       sheetBtnBell: document.getElementById('sheet-btn-bell'),
       sheetBtnMokugyo: document.getElementById('sheet-btn-mokugyo'),
+      btnShareLink: document.getElementById('btn-share-link'),
 
       // Mobile Bottom Bar Navigation
       mBtnToc: document.getElementById('m-btn-toc'),
@@ -395,6 +396,28 @@ class PrajnaApp {
     if (this.el.mBtnDisplay) {
       this.el.mBtnDisplay.addEventListener('click', () => {
         this.openSettingsDrawer();
+      });
+    }
+
+    // Share link to current chapter
+    if (this.el.btnShareLink) {
+      this.el.btnShareLink.addEventListener('click', async () => {
+        const shareUrl = `${window.location.origin}${window.location.pathname}#quyen-${this.currentQuyenNum}`;
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(shareUrl);
+          } else {
+            const tempInput = document.createElement('input');
+            tempInput.value = shareUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+          }
+          this.showToast(`Đã sao chép liên kết Quyển ${this.currentQuyenNum}!`);
+        } catch (e) {
+          this.showToast(`Liên kết: ${shareUrl}`);
+        }
       });
     }
 
@@ -781,6 +804,12 @@ class PrajnaApp {
       `;
 
       this.el.contentInner.innerHTML = parsedHtml + navBottomHtml;
+
+      // Update dynamic document title for browser tabs & history
+      const shortPham = (meta.pham || '').split('&')[0].replace(/^[IVXLCDM]+\.\s*/, '').trim();
+      document.title = shortPham 
+        ? `Quyển ${quyenNum}: ${shortPham} — Kinh Đại Bát Nhã`
+        : `Quyển ${quyenNum} — Kinh Đại Bát Nhã`;
 
       // Scroll to top
       this.el.contentArea.scrollTop = 0;
