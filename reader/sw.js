@@ -1,9 +1,9 @@
 /**
- * Prajñā Reader Service Worker (v8)
+ * Prajñā Reader Service Worker (v9)
  * Network-first for all code/HTML assets to ensure instant UI updates
  */
 
-const CACHE_NAME = 'prajna-cache-v8';
+const CACHE_NAME = 'prajna-cache-v9';
 
 const STATIC_ASSETS = [
   './',
@@ -15,8 +15,11 @@ const STATIC_ASSETS = [
   './js/parser.js',
   './js/storage.js',
   './js/search.js',
+  './js/search_fulltext.js',
+  './js/glossary.js',
   './js/audio.js',
   './data/toc.json',
+  './data/glossary.json',
   './assets/icon-192.svg',
   './assets/icon-512.svg'
 ];

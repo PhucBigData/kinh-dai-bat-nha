@@ -2,7 +2,7 @@
  * Prajñā Reader Master Controller (v3 - Optimized Reading Edition)
  */
 
-import { parseMarkdown, renderOpeningRitual, renderClosingRitual } from './parser.js?v=7';
+import { parseMarkdown, renderOpeningRitual, renderClosingRitual } from './parser.js?v=9';
 import { 
   loadPreferences, 
   savePreferences, 
@@ -14,15 +14,17 @@ import {
   toggleQuyenCompleted,
   isQuyenCompleted,
   getCompletedQuyens
-} from './storage.js?v=7';
-import { filterQuyenList } from './search.js?v=7';
+} from './storage.js?v=9';
+import { filterQuyenList } from './search.js?v=9';
 import { 
   playBell, 
   playMokugyo, 
   startMokugyoMetronome, 
   stopMokugyoMetronome, 
   isMetronomeRunning 
-} from './audio.js?v=7';
+} from './audio.js?v=9';
+import { searchFullText, fetchQuyenExcerpts } from './search_fulltext.js?v=9';
+import { loadGlossary, searchGlossary, renderGlossaryCard, renderGlossaryModalContent } from './glossary.js?v=9';
 
 class PrajnaApp {
   constructor() {
@@ -30,9 +32,11 @@ class PrajnaApp {
     this.quyenList = [];
     this.filteredList = [];
     this.currentQuyenNum = 1;
-    this.catalogMode = 'tap'; // 'tap' (11 Tập) or 'hoi' (16 Hội)
+    this.catalogMode = 'tap'; // 'tap' | 'hoi' | 'fullsearch' | 'glossary'
     this.activeTapId = 0;     // 0 = Tất cả
     this.activeHoiId = 0;     // 0 = Tất cả
+    this.activeGlossaryCategory = 'Tất cả';
+    this.glossaryCategories = ['Tất cả', 'Bát Nhã Căn Bản', 'Tánh Không', 'Bồ Tát Đạo', 'Pháp Tướng & Nhận Thức', 'Cứu Cánh'];
     this.prefs = loadPreferences();
     this.scrollSaveTimer = null;
 
@@ -69,6 +73,18 @@ class PrajnaApp {
       filterChipsBar: document.getElementById('filter-chips-bar'),
       tabTap: document.getElementById('tab-tap'),
       tabHoi: document.getElementById('tab-hoi'),
+      tabFullsearch: document.getElementById('tab-fullsearch'),
+      tabGlossary: document.getElementById('tab-glossary'),
+      fullsearchContainer: document.getElementById('fullsearch-container'),
+      fullsearchStatus: document.getElementById('fullsearch-status'),
+      fullsearchResults: document.getElementById('fullsearch-results'),
+      glossaryContainer: document.getElementById('glossary-container'),
+      glossaryCategoryFilter: document.getElementById('glossary-category-filter'),
+      glossaryList: document.getElementById('glossary-list'),
+      glossaryBackdrop: document.getElementById('glossary-backdrop'),
+      glossaryModal: document.getElementById('glossary-modal'),
+      glossaryModalInner: document.getElementById('glossary-modal-inner'),
+      btnCloseGlossaryModal: document.getElementById('btn-close-glossary-modal'),
 
       contentArea: document.getElementById('content-area'),
       contentInner: document.getElementById('content-inner'),
@@ -319,25 +335,18 @@ class PrajnaApp {
       this.el.searchGoBtn.addEventListener('click', handleSmartJump);
     }
 
-    // 7. Catalog View Mode Tabs (11 Tập vs. 16 Hội)
-    if (this.el.tabTap && this.el.tabHoi) {
-      this.el.tabTap.addEventListener('click', () => {
-        this.catalogMode = 'tap';
-        this.el.tabTap.classList.add('active');
-        this.el.tabHoi.classList.remove('active');
-        this.activeTapId = 0;
-        this.renderFilterChips();
-        this.handleSearch(this.el.searchInput.value);
-      });
+    // 7. Catalog View Mode Tabs (11 Tập, 16 Hội, Tra Cứu Toàn Văn, Từ Điển Bát Nhã)
+    if (this.el.tabTap) this.el.tabTap.addEventListener('click', () => this.setCatalogMode('tap'));
+    if (this.el.tabHoi) this.el.tabHoi.addEventListener('click', () => this.setCatalogMode('hoi'));
+    if (this.el.tabFullsearch) this.el.tabFullsearch.addEventListener('click', () => this.setCatalogMode('fullsearch'));
+    if (this.el.tabGlossary) this.el.tabGlossary.addEventListener('click', () => this.setCatalogMode('glossary'));
 
-      this.el.tabHoi.addEventListener('click', () => {
-        this.catalogMode = 'hoi';
-        this.el.tabHoi.classList.add('active');
-        this.el.tabTap.classList.remove('active');
-        this.activeHoiId = 0;
-        this.renderFilterChips();
-        this.handleSearch(this.el.searchInput.value);
-      });
+    // Glossary Modal Close Handlers
+    if (this.el.btnCloseGlossaryModal) {
+      this.el.btnCloseGlossaryModal.addEventListener('click', () => this.closeGlossaryModal());
+    }
+    if (this.el.glossaryBackdrop) {
+      this.el.glossaryBackdrop.addEventListener('click', () => this.closeGlossaryModal());
     }
 
     // 8. Auto-Scroll Controller
@@ -522,29 +531,42 @@ class PrajnaApp {
       });
     }
 
-    // Search Input with Smart Jump
+    // Search Input with Smart Jump & Full-Text Search
+    let searchDebounceTimer = null;
     this.el.searchInput.addEventListener('input', (e) => {
       const q = e.target.value;
       this.el.searchClearBtn.classList.toggle('visible', !!q);
       const isNum = !!parseQuyenNumber(q);
       if (this.el.searchGoBtn) {
-        this.el.searchGoBtn.classList.toggle('visible', isNum);
+        this.el.searchGoBtn.classList.toggle('visible', isNum && (this.catalogMode === 'tap' || this.catalogMode === 'hoi'));
       }
-      this.handleSearch(q);
+      if (this.catalogMode === 'fullsearch') {
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+          this.handleSearch(q);
+        }, 180);
+      } else {
+        this.handleSearch(q);
+      }
     });
 
     this.el.searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
-        const qNum = parseQuyenNumber(this.el.searchInput.value);
-        if (qNum) {
-          handleSmartJump();
-        } else if (this.filteredList.length > 0) {
-          this.loadQuyen(this.filteredList[0].quyen);
-          this.el.searchInput.blur();
-          if (window.innerWidth <= 900) {
-            this.el.sidebar.classList.add('closed');
-            if (this.el.sidebarBackdrop) this.el.sidebarBackdrop.classList.remove('active');
+        if (this.catalogMode === 'tap' || this.catalogMode === 'hoi') {
+          const qNum = parseQuyenNumber(this.el.searchInput.value);
+          if (qNum) {
+            handleSmartJump();
+          } else if (this.filteredList.length > 0) {
+            this.loadQuyen(this.filteredList[0].quyen);
+            this.el.searchInput.blur();
+            if (window.innerWidth <= 900) {
+              this.el.sidebar.classList.add('closed');
+              if (this.el.sidebarBackdrop) this.el.sidebarBackdrop.classList.remove('active');
+            }
           }
+        } else if (this.catalogMode === 'fullsearch') {
+          clearTimeout(searchDebounceTimer);
+          this.handleSearch(this.el.searchInput.value);
         }
       }
     });
@@ -592,6 +614,9 @@ class PrajnaApp {
         playMokugyo();
       } else if (e.key === 'z') {
         this.toggleZenMode(!document.body.classList.contains('zen-mode'));
+      } else if (e.key === 'Escape') {
+        this.closeGlossaryModal();
+        this.closeSettingsDrawer();
       } else if (e.key === ' ') {
         e.preventDefault();
         if (this.isAutoScrolling) {
@@ -747,6 +772,53 @@ class PrajnaApp {
     this.el.drawerBackdrop.classList.remove('active');
   }
 
+  setCatalogMode(mode) {
+    this.catalogMode = mode;
+
+    // Update tab button active states
+    const tabs = [this.el.tabTap, this.el.tabHoi, this.el.tabFullsearch, this.el.tabGlossary];
+    tabs.forEach(tab => {
+      if (tab) tab.classList.toggle('active', tab.dataset.mode === mode);
+    });
+
+    if (mode === 'tap' || mode === 'hoi') {
+      if (this.el.filterChipsBar) this.el.filterChipsBar.classList.remove('hidden');
+      if (this.el.quyenListContainer) this.el.quyenListContainer.classList.remove('hidden');
+      if (this.el.fullsearchContainer) this.el.fullsearchContainer.classList.add('hidden');
+      if (this.el.glossaryContainer) this.el.glossaryContainer.classList.add('hidden');
+      if (this.el.searchInput) {
+        this.el.searchInput.placeholder = 'Gõ số Quyển (1–600) hoặc tên Phẩm...';
+      }
+      if (mode === 'tap') this.activeTapId = 0;
+      if (mode === 'hoi') this.activeHoiId = 0;
+      this.renderFilterChips();
+      this.handleSearch(this.el.searchInput.value);
+    } else if (mode === 'fullsearch') {
+      if (this.el.filterChipsBar) this.el.filterChipsBar.classList.add('hidden');
+      if (this.el.quyenListContainer) this.el.quyenListContainer.classList.add('hidden');
+      if (this.el.fullsearchContainer) this.el.fullsearchContainer.classList.remove('hidden');
+      if (this.el.glossaryContainer) this.el.glossaryContainer.classList.add('hidden');
+      if (this.el.searchInput) {
+        this.el.searchInput.placeholder = 'Tìm câu kinh trong 600 Quyển (vd: tánh không, vô sở đắc)...';
+        this.el.searchInput.focus();
+      }
+      if (this.el.searchGoBtn) this.el.searchGoBtn.classList.remove('visible');
+      this.handleSearch(this.el.searchInput.value);
+    } else if (mode === 'glossary') {
+      if (this.el.filterChipsBar) this.el.filterChipsBar.classList.add('hidden');
+      if (this.el.quyenListContainer) this.el.quyenListContainer.classList.add('hidden');
+      if (this.el.fullsearchContainer) this.el.fullsearchContainer.classList.add('hidden');
+      if (this.el.glossaryContainer) this.el.glossaryContainer.classList.remove('hidden');
+      if (this.el.searchInput) {
+        this.el.searchInput.placeholder = 'Tìm thuật ngữ Bát Nhã (Việt, Phạn, Hán)...';
+        this.el.searchInput.focus();
+      }
+      if (this.el.searchGoBtn) this.el.searchGoBtn.classList.remove('visible');
+      this.renderGlossaryCategories();
+      this.handleSearch(this.el.searchInput.value);
+    }
+  }
+
   renderFilterChips() {
     if (this.catalogMode === 'tap') {
       let html = `<button class="filter-chip ${this.activeTapId === 0 ? 'active' : ''}" data-tap-id="0">Tất cả (600)</button>`;
@@ -781,17 +853,217 @@ class PrajnaApp {
     }
   }
 
-  handleSearch(query) {
-    let list = this.quyenList;
+  async handleSearch(query) {
+    if (this.catalogMode === 'tap' || this.catalogMode === 'hoi') {
+      let list = this.quyenList;
 
-    if (this.catalogMode === 'tap' && this.activeTapId > 0) {
-      list = list.filter(q => q.tap === this.activeTapId);
-    } else if (this.catalogMode === 'hoi' && this.activeHoiId > 0) {
-      list = list.filter(q => q.hoi_id === this.activeHoiId);
+      if (this.catalogMode === 'tap' && this.activeTapId > 0) {
+        list = list.filter(q => q.tap === this.activeTapId);
+      } else if (this.catalogMode === 'hoi' && this.activeHoiId > 0) {
+        list = list.filter(q => q.hoi_id === this.activeHoiId);
+      }
+
+      this.filteredList = filterQuyenList(list, query);
+      this.renderSidebarList();
+    } else if (this.catalogMode === 'fullsearch') {
+      await this.handleFullTextSearch(query);
+    } else if (this.catalogMode === 'glossary') {
+      await this.handleGlossarySearch(query);
+    }
+  }
+
+  async handleFullTextSearch(query) {
+    if (!this.el.fullsearchResults || !this.el.fullsearchStatus) return;
+
+    const trimmed = (query || '').trim();
+    if (trimmed.length < 2) {
+      this.el.fullsearchStatus.innerHTML = `
+        <span class="fullsearch-hint">💡 Nhập từ khóa (tối thiểu 2 ký tự, vd: <em>vô sở đắc, tánh không, bát nhã, chân như</em>) để tìm câu kinh trong 600 Quyển.</span>
+      `;
+      this.el.fullsearchResults.innerHTML = '';
+      return;
     }
 
-    this.filteredList = filterQuyenList(list, query);
-    this.renderSidebarList();
+    this.el.fullsearchStatus.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="modal-lotus-icon" style="display: inline-block; animation: spin 2s linear infinite;">☸</span>
+        <span>Đang tra cứu 600 Quyển cho từ khóa "<strong>${escapeHtml(trimmed)}</strong>"...</span>
+      </div>
+    `;
+
+    try {
+      const results = await searchFullText(trimmed, this.quyenList);
+
+      if (results.length === 0) {
+        this.el.fullsearchStatus.innerHTML = `
+          <span style="color: var(--text-muted);">Không tìm thấy đoạn kinh nào chứa từ khóa "<strong>${escapeHtml(trimmed)}</strong>".</span>
+        `;
+        this.el.fullsearchResults.innerHTML = '';
+        return;
+      }
+
+      const totalHits = results.reduce((acc, r) => acc + r.count, 0);
+      this.el.fullsearchStatus.innerHTML = `
+        <div style="font-weight: 600; color: var(--text-primary);">
+          Tìm thấy <strong>${results.length}</strong> Quyển (${totalHits} lần xuất hiện) chứa "<strong>${escapeHtml(trimmed)}</strong>"
+        </div>
+      `;
+
+      // Render top results (up to 80 to keep smooth rendering)
+      const renderCount = Math.min(results.length, 80);
+      const itemsHtml = results.slice(0, renderCount).map(r => `
+        <li class="fullsearch-item-card" data-quyen="${r.quyen}">
+          <div class="fullsearch-card-header">
+            <div class="fullsearch-q-title">Quyển ${String(r.quyen).padStart(2, '0')}</div>
+            <span class="fullsearch-hit-badge">${r.count} lần</span>
+          </div>
+          <div class="fullsearch-q-sub">
+            Tập ${r.meta.tap} · Hội ${r.meta.hoi_id} · ${escapeHtml(r.meta.pham || r.meta.hoi)}
+          </div>
+          <div class="fullsearch-card-actions">
+            <button class="btn-read-quyen-direct" data-quyen="${r.quyen}">Đọc Quyển này ➔</button>
+            <button class="btn-view-excerpt-toggle" data-quyen="${r.quyen}">Xem trích đoạn ▾</button>
+          </div>
+          <div class="fullsearch-excerpts-box hidden" id="excerpts-box-${r.quyen}"></div>
+        </li>
+      `).join('');
+
+      this.el.fullsearchResults.innerHTML = itemsHtml;
+
+      // Bind events for fullsearch items
+      this.el.fullsearchResults.querySelectorAll('.btn-read-quyen-direct').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const qNum = parseInt(btn.dataset.quyen, 10);
+          this.loadQuyen(qNum);
+          if (window.innerWidth <= 900) {
+            this.el.sidebar.classList.add('closed');
+            if (this.el.sidebarBackdrop) this.el.sidebarBackdrop.classList.remove('active');
+          }
+        });
+      });
+
+      this.el.fullsearchResults.querySelectorAll('.btn-view-excerpt-toggle').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const qNum = parseInt(btn.dataset.quyen, 10);
+          const box = document.getElementById(`excerpts-box-${qNum}`);
+          if (!box) return;
+
+          const isHidden = box.classList.toggle('hidden');
+          btn.textContent = isHidden ? 'Xem trích đoạn ▾' : 'Ẩn trích đoạn ▴';
+
+          if (!isHidden && !box.dataset.loaded) {
+            box.innerHTML = '<p class="fullsearch-excerpt-p" style="font-style: italic; color: var(--text-muted);">Đang nạp trích đoạn...</p>';
+            const excerpts = await fetchQuyenExcerpts(qNum, trimmed, this.quyenList, 3);
+            if (excerpts.length === 0) {
+              box.innerHTML = '<p class="fullsearch-excerpt-p" style="color: var(--text-muted);">Từ khóa xuất hiện trong các đoạn trùng tụng của phẩm này.</p>';
+            } else {
+              box.innerHTML = excerpts.map(ex => `<p class="fullsearch-excerpt-p">...${ex}...</p>`).join('');
+            }
+            box.dataset.loaded = 'true';
+          }
+        });
+      });
+
+      this.el.fullsearchResults.querySelectorAll('.fullsearch-item-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('.fullsearch-card-actions') || e.target.closest('.fullsearch-excerpts-box')) return;
+          const qNum = parseInt(card.dataset.quyen, 10);
+          this.loadQuyen(qNum);
+          if (window.innerWidth <= 900) {
+            this.el.sidebar.classList.add('closed');
+            if (this.el.sidebarBackdrop) this.el.sidebarBackdrop.classList.remove('active');
+          }
+        });
+      });
+
+    } catch (err) {
+      console.error('Lỗi tìm kiếm toàn văn:', err);
+      this.el.fullsearchStatus.innerHTML = `<span style="color: var(--accent);">Có lỗi xảy ra khi tra cứu: ${escapeHtml(err.message)}</span>`;
+    }
+  }
+
+  renderGlossaryCategories() {
+    if (!this.el.glossaryCategoryFilter) return;
+    const html = this.glossaryCategories.map(cat => `
+      <button class="filter-chip ${this.activeGlossaryCategory === cat ? 'active' : ''}" data-category="${cat}">
+        ${cat}
+      </button>
+    `).join('');
+    this.el.glossaryCategoryFilter.innerHTML = html;
+
+    this.el.glossaryCategoryFilter.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        this.activeGlossaryCategory = chip.dataset.category;
+        this.el.glossaryCategoryFilter.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c === chip));
+        this.handleGlossarySearch(this.el.searchInput.value);
+      });
+    });
+  }
+
+  async handleGlossarySearch(query) {
+    if (!this.el.glossaryList) return;
+
+    try {
+      const list = await searchGlossary(query);
+      const filtered = (this.activeGlossaryCategory && this.activeGlossaryCategory !== 'Tất cả')
+        ? list.filter(item => item.category === this.activeGlossaryCategory)
+        : list;
+
+      if (filtered.length === 0) {
+        this.el.glossaryList.innerHTML = `
+          <li style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+            Không tìm thấy thuật ngữ nào phù hợp với "${escapeHtml(query)}".
+          </li>
+        `;
+        return;
+      }
+
+      this.el.glossaryList.innerHTML = filtered.map(renderGlossaryCard).join('');
+
+      // Bind click to open detail modal
+      this.el.glossaryList.querySelectorAll('.glossary-item-card').forEach(card => {
+        card.addEventListener('click', async () => {
+          const termId = card.dataset.termId;
+          const allTerms = await loadGlossary();
+          const found = allTerms.find(t => t.id === termId);
+          if (found) {
+            this.openGlossaryModal(found);
+          }
+        });
+      });
+    } catch (err) {
+      console.error('Lỗi tra cứu từ điển:', err);
+      this.el.glossaryList.innerHTML = `<li style="padding: 16px; color: var(--accent);">Lỗi tải từ điển: ${escapeHtml(err.message)}</li>`;
+    }
+  }
+
+  openGlossaryModal(item) {
+    if (!this.el.glossaryModal || !this.el.glossaryModalInner) return;
+    this.el.glossaryModalInner.innerHTML = renderGlossaryModalContent(item);
+    this.el.glossaryModal.classList.add('open');
+    if (this.el.glossaryBackdrop) this.el.glossaryBackdrop.classList.add('active');
+
+    // Bind deep search trigger button inside modal
+    const btnSearchTerm = document.getElementById('btn-search-term-in-sutra');
+    if (btnSearchTerm) {
+      btnSearchTerm.addEventListener('click', () => {
+        const term = btnSearchTerm.dataset.term;
+        this.closeGlossaryModal();
+        this.setCatalogMode('fullsearch');
+        if (this.el.searchInput) {
+          this.el.searchInput.value = term;
+          if (this.el.searchClearBtn) this.el.searchClearBtn.classList.add('visible');
+        }
+        this.handleSearch(term);
+      });
+    }
+  }
+
+  closeGlossaryModal() {
+    if (this.el.glossaryModal) this.el.glossaryModal.classList.remove('open');
+    if (this.el.glossaryBackdrop) this.el.glossaryBackdrop.classList.remove('active');
   }
 
   updateTrackerUI() {
@@ -1071,3 +1343,14 @@ window.addEventListener('DOMContentLoaded', () => {
   const app = new PrajnaApp();
   app.init();
 });
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>"']/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[m]);
+}

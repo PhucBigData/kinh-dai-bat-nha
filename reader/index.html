@@ -31,8 +31,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <link rel="stylesheet" href="css/themes.css?v=8">
-  <link rel="stylesheet" href="css/app.css?v=8">
+  <link rel="stylesheet" href="css/themes.css?v=9">
+  <link rel="stylesheet" href="css/app.css?v=9">
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(regs => {
@@ -165,10 +165,12 @@
             <button id="search-clear" class="search-clear" title="Xóa">✕</button>
           </div>
 
-          <!-- View Mode Tabs (11 Tập vs. 16 Hội) -->
+          <!-- View Mode Tabs (11 Tập, 16 Hội, Tra Cứu Toàn Văn, Từ Điển) -->
           <div class="catalog-tabs">
-            <button id="tab-tap" class="catalog-tab-btn active" data-mode="tap">📖 Theo 11 Tập</button>
-            <button id="tab-hoi" class="catalog-tab-btn" data-mode="hoi">☸ Theo 16 Hội</button>
+            <button id="tab-tap" class="catalog-tab-btn active" data-mode="tap" title="Xem 600 quyển theo 11 Tập">📖 11 Tập</button>
+            <button id="tab-hoi" class="catalog-tab-btn" data-mode="hoi" title="Xem 600 quyển theo 16 Hội">☸ 16 Hội</button>
+            <button id="tab-fullsearch" class="catalog-tab-btn" data-mode="fullsearch" title="Tìm kiếm câu kinh xuyên suốt 600 Quyển">🔍 Toàn Văn</button>
+            <button id="tab-glossary" class="catalog-tab-btn" data-mode="glossary" title="Tra cứu Từ Điển Thuật Ngữ Bát Nhã">📚 Từ Điển</button>
           </div>
         </div>
 
@@ -177,10 +179,24 @@
           <!-- Populated by JS -->
         </div>
 
-        <!-- Scrollable Quyển List -->
+        <!-- 1. Scrollable Quyển List (Default) -->
         <ul id="quyen-list" class="quyen-list">
           <!-- Populated by JS -->
         </ul>
+
+        <!-- 2. Full-Text Search Results Container -->
+        <div id="fullsearch-container" class="fullsearch-container hidden">
+          <div id="fullsearch-status" class="fullsearch-status">
+            <span class="fullsearch-hint">💡 Nhập từ khóa (vd: <em>vô sở đắc, tánh không, huyễn hóa, chân như</em>) để tìm câu kinh trong 600 Quyển.</span>
+          </div>
+          <ul id="fullsearch-results" class="fullsearch-results-list"></ul>
+        </div>
+
+        <!-- 3. Buddhist Glossary Container -->
+        <div id="glossary-container" class="glossary-container hidden">
+          <div id="glossary-category-filter" class="filter-chips-bar"></div>
+          <ul id="glossary-list" class="glossary-list"></ul>
+        </div>
       </aside>
       <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
 
@@ -409,7 +425,14 @@
     </div>
   </aside>
 
+  <!-- Buddhist Glossary Detail Modal Popover -->
+  <div id="glossary-backdrop" class="drawer-backdrop"></div>
+  <div id="glossary-modal" class="glossary-modal" role="dialog" aria-modal="true" aria-label="Tra cứu thuật ngữ Bát Nhã">
+    <button id="btn-close-glossary-modal" class="modal-close-btn" title="Đóng cửa sổ">✕</button>
+    <div id="glossary-modal-inner" class="glossary-modal-inner"></div>
+  </div>
+
   <!-- Main App Script -->
-  <script type="module" src="js/app.js?v=8"></script>
+  <script type="module" src="js/app.js?v=9"></script>
 </body>
 </html>
