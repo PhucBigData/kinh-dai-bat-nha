@@ -22,7 +22,7 @@ import {
   startMokugyoMetronome, 
   stopMokugyoMetronome, 
   isMetronomeRunning 
-} from './audio.js?v=9';
+} from './audio.js?v=10';
 import { searchFullText, fetchQuyenExcerpts } from './search_fulltext.js?v=9';
 import { loadGlossary, searchGlossary, renderGlossaryCard, renderGlossaryModalContent } from './glossary.js?v=9';
 
